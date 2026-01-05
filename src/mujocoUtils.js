@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { Reflector  } from './utils/Reflector.js';
+import { Reflector } from './utils/Reflector.js';
 import { MuJoCoDemo } from './main.js';
 
 export async function reloadFunc() {
@@ -22,16 +22,15 @@ export function setupGUI(parentContext) {
     // TODO: Use free camera parameters from MuJoCo
     parentContext.camera.position.set(2.0, 1.7, 1.7);
     parentContext.controls.target.set(0, 0.7, 0);
-    parentContext.controls.update(); });
+    parentContext.controls.update();
+  });
 
   // Add scene selection dropdown.
   let reload = reloadFunc.bind(parentContext);
   parentContext.gui.add(parentContext.params, 'scene', {
-    "Humanoid": "humanoid.xml", "Cassie": "agility_cassie/scene.xml",
-    "Hammock": "hammock.xml", "Balloons": "balloons.xml", "Hand": "shadow_hand/scene_right.xml",
-    "Mug": "mug.xml", "Tendon": "model_with_tendon.xml",
-    "Torture Model": "model.xml", "Flex": "flex.xml", "Car": "car.xml", 
-    "Go2": "stairs.xml"
+    "Stairs": "go2/stairs.xml",
+    "Race Track": "go2/race_track.xml",
+    "Flat": "go2/flat.xml"
   }).name('Example Scene').onChange(reload);
 
   // Add a help menu.
@@ -645,57 +644,6 @@ export function drawTendonsAndFlex(mujocoRoot, model, data) {
  * @param {mujoco} mujoco */
 export async function downloadExampleScenesFolder(mujoco) {
   let allFiles = [
-    "22_humanoids.xml",
-    "adhesion.xml",
-    "agility_cassie/assets/achilles-rod.obj",
-    "agility_cassie/assets/cassie-texture.png",
-    "agility_cassie/assets/foot-crank.obj",
-    "agility_cassie/assets/foot.obj",
-    "agility_cassie/assets/heel-spring.obj",
-    "agility_cassie/assets/hip-pitch.obj",
-    "agility_cassie/assets/hip-roll.obj",
-    "agility_cassie/assets/hip-yaw.obj",
-    "agility_cassie/assets/knee-spring.obj",
-    "agility_cassie/assets/knee.obj",
-    "agility_cassie/assets/pelvis.obj",
-    "agility_cassie/assets/plantar-rod.obj",
-    "agility_cassie/assets/shin.obj",
-    "agility_cassie/assets/tarsus.obj",
-    "agility_cassie/cassie.xml",
-    "agility_cassie/scene.xml",
-    "arm26.xml",
-    "balloons.xml",
-    "car.xml",
-    "flex.xml",
-    "hammock.xml",
-    "humanoid.xml",
-    "humanoid_body.xml",
-    "model.xml",
-    "mug.obj",
-    "mug.png",
-    "mug.xml",
-    "scene.xml",
-    "shadow_hand/assets/f_distal_pst.obj",
-    "shadow_hand/assets/f_knuckle.obj",
-    "shadow_hand/assets/f_middle.obj",
-    "shadow_hand/assets/f_proximal.obj",
-    "shadow_hand/assets/forearm_0.obj",
-    "shadow_hand/assets/forearm_1.obj",
-    "shadow_hand/assets/forearm_collision.obj",
-    "shadow_hand/assets/lf_metacarpal.obj",
-    "shadow_hand/assets/mounting_plate.obj",
-    "shadow_hand/assets/palm.obj",
-    "shadow_hand/assets/th_distal_pst.obj",
-    "shadow_hand/assets/th_middle.obj",
-    "shadow_hand/assets/th_proximal.obj",
-    "shadow_hand/assets/wrist.obj",
-    "shadow_hand/left_hand.xml",
-    "shadow_hand/right_hand.xml",
-    "shadow_hand/scene_left.xml",
-    "shadow_hand/scene_right.xml",
-    "simple.xml",
-    "slider_crank.xml",
-    "model_with_tendon.xml",
     // go2 model files
     "go2/flat.xml",
     "go2/go2.xml",

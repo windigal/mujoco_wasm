@@ -5,7 +5,9 @@
 
   <statistic meansize="0.144785" extent="1.23314" center="0.025392 2.0634e-05 -0.245975"/>
   <default>
-    <joint damping="0.001" armature="0.01" frictionloss="0.1"/>
+  <joint damping="0.001" armature="0.01" frictionloss="0.1"/>
+  <!-- Make motors ctrllimited by default so GUI will display them -->
+  <motor ctrlrange="-100 100" />
     <default class="visual">
         <geom type="mesh" contype="0" conaffinity="0" group="2"/>
     </default>
