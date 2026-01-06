@@ -29,6 +29,56 @@ export async function reloadFunc() {
 
 /** @param {MuJoCoDemo} parentContext*/
 export function setupGUI(parentContext) {
+    // 注入自定义 CSS 样式
+    const style = document.createElement('style');
+    style.innerHTML = `
+        /* 选中状态的按钮样式 */
+        .lil-gui .controller.toggled-on {
+            border-left: 4px solid #00ff00 !important; /* 左侧亮条 */
+            background: rgba(0, 255, 0, 0.15); /* 微弱的绿色背景 */
+        }
+        .lil-gui .controller.toggled-on .name {
+            color: #fff;
+            text-shadow: 0 0 5px #00ff00; /* 文字发光 */
+        }
+        /* 稍微增加按钮高度，使其更像触控按钮 */
+        .lil-gui .button {
+            line-height: 24px; 
+        }
+    `;
+    document.head.appendChild(style);
+
+    // --- 辅助函数：创建带状态的开关按钮 ---
+    const setupToggleButton = (folder, params, key, name, onChange) => {
+        const btnDef = {
+            click: () => {
+                params[key] = !params[key]; // 点击时翻转布尔值
+                updateVisual();             // 更新样式
+                if (onChange) onChange(params[key]); // 触发回调
+            }
+        };
+
+        // 添加一个按钮
+        const ctrl = folder.add(btnDef, 'click').name(name);
+
+        // 定义如何根据 params 更新样式
+        const updateVisual = () => {
+            const dom = ctrl.domElement.closest('.controller');
+            if (params[key]) {
+                dom.classList.add('toggled-on');
+            } else {
+                dom.classList.remove('toggled-on');
+            }
+        };
+
+        // 初始化时执行一次
+        updateVisual();
+
+        // 挂载方法供外部调用 (比如 Refresh 按钮需要手动更新它)
+        ctrl.updateDisplayState = updateVisual;
+
+        return ctrl;
+    };
 
     // Make sure we reset the camera when the scene is changed or reloaded.
     parentContext.updateGUICallbacks.length = 0;
@@ -39,9 +89,7 @@ export function setupGUI(parentContext) {
         parentContext.controls.update();
     });
 
-    // ==========================================
-    // 1. Scene Folder
-    // ==========================================
+    // Scene Folder
     const sceneFolder = parentContext.gui.addFolder('Scene');
     let reload = reloadFunc.bind(parentContext);
     // 使用下拉菜单（Select），lil-gui 标准方式
@@ -57,28 +105,36 @@ export function setupGUI(parentContext) {
 
     // Model Selector
     aiFolder.add(parentContext.params, 'model', {
-        "One frame PPO": "./models/policy.onnx"
-    }).name('Model');
+        "PPO": "ppo",
+        "MOECTS": "moects"
+    }).name('Model').onChange(() => {
+        if (parentContext.params.enableRL) {
+            parentContext.toggleRL(true);
+        }
+    });
 
-    // Enable AI Control Button
-    const enableCtrl = aiFolder.add(parentContext.params, 'enableRL')
-        .name('Enable AI Control')
-        .onChange((enabled) => {
-            parentContext.toggleRL(enabled);
-        });
+    // 1. 使用 setupToggleButton
+    const enableCtrl = setupToggleButton(
+        aiFolder,
+        parentContext.params,
+        'enableRL',
+        'Enable AI Control',
+        (enabled) => { parentContext.toggleRL(enabled); }
+    );
 
-    // Refresh 按钮逻辑
+    // 2. Refresh 逻辑里使用 enableCtrl.updateDisplayState()
     const refreshObj = {
         refresh: () => {
-            const isEnabled = enableCtrl.getValue();
-
-            if (!isEnabled) {
-                enableCtrl.setValue(true);
+            if (!parentContext.params.enableRL) {
+                parentContext.params.enableRL = true;
+                enableCtrl.updateDisplayState(); // <--- 这里变了，手动触发样式更新
+                parentContext.toggleRL(true);
             } else {
                 parentContext.toggleRL(true);
             }
         }
     };
+
     aiFolder.add(refreshObj, 'refresh').name('Refresh AI Control');
     aiFolder.open(); // 默认展开
 
@@ -86,7 +142,13 @@ export function setupGUI(parentContext) {
     const simFolder = parentContext.gui.addFolder("Simulation");
 
     // Pause
-    const pauseSimulation = simFolder.add(parentContext.params, 'paused').name('Pause Simulation');
+    const pauseSimulation = setupToggleButton(
+        simFolder,
+        parentContext.params,
+        'paused',
+        'Pause Simulation',
+        (enabled) => { parentContext.toggleRL(enabled); }
+    );
     pauseSimulation.onChange((value) => {
         if (value) {
             const pausedText = document.createElement('div');
@@ -118,8 +180,8 @@ export function setupGUI(parentContext) {
 
     // Camera 
     const camFolder = parentContext.gui.addFolder('Camera');
-    camFolder.add(parentContext.params, 'follow').name('Follow Robot');
-    camFolder.add(parentContext.params, 'showArrows').name('Show Velocity Arrows');
+    setupToggleButton(camFolder, parentContext.params, 'follow', 'Follow Robot');
+    setupToggleButton(camFolder, parentContext.params, 'showArrows', 'Show Velocity Arrows');
     camFolder.open(); // 默认展开
 
     // Actuators
@@ -237,10 +299,7 @@ function setupHelpMenu(parentContext) {
     });
 }
 
-// ... loadSceneFromURL, drawTendonsAndFlex, downloadExampleScenesFolder 等函数保持不变 ...
-// (为了节省篇幅，这里假设你保留了文件中后面的辅助函数。如果没有，请告诉我，我再贴出来)
 export async function loadSceneFromURL(mujoco, filename, parent) {
-    // ... (保持原样) ...
     // Free the old data.
     if (parent.data != null) {
         parent.data.delete();
@@ -580,8 +639,6 @@ export async function loadSceneFromURL(mujoco, filename, parent) {
 }
 
 export function drawTendonsAndFlex(mujocoRoot, model, data) {
-    // ... (保持原样) ...
-    // Update tendon transforms.
     let identityQuat = new THREE.Quaternion();
     let numWraps = 0;
     if (mujocoRoot && mujocoRoot.cylinders) {

@@ -12,7 +12,7 @@ import { RobotController } from './utils/RobotController.js';
 const mujoco = await load_mujoco();
 
 // Virtual FS Setup
-var initialScene = "go2/flat.xml";
+var initialScene = "go2/stairs.xml";
 mujoco.FS.mkdir('/working');
 mujoco.FS.mount(mujoco.MEMFS, { root: '.' }, '/working');
 
@@ -35,7 +35,18 @@ export class MuJoCoDemo {
         this.renderer = this.sceneSetup.renderer;
         this.controls = this.sceneSetup.controls;
         this.container = this.sceneSetup.container;
-
+        this.modelConfigs = {
+            "ppo": {
+                url: './models/ppo.onnx',
+                history: 1,
+                stacking: 'frame'
+            },
+            "moects": {
+                url: './models/moects.onnx', // 你的新模型文件名
+                history: 5,
+                stacking: 'term'
+            }
+        };
         // State Variables
         this.params = {
             scene: initialScene,
@@ -46,7 +57,7 @@ export class MuJoCoDemo {
             follow: false,
             enableRL: false,
             showArrows: false,
-            model: './models/policy.onnx'
+            model: 'ppo'
         };
 
         this.mujoco_time = 0.0;
@@ -80,7 +91,8 @@ export class MuJoCoDemo {
 
     async toggleRL(enabled) {
         if (enabled) {
-            const success = await this.robotController.loadModel(this.params.model);
+            const config = this.modelConfigs[this.params.model] || this.modelConfigs["ppo"];
+            const success = await this.robotController.loadModel(config);
             if (success) {
                 this.robotController.resetPose();
             } else {

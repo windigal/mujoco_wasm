@@ -23,9 +23,21 @@ export class RobotController {
         this.currentTarget = new Float32Array(this.default_angles);
         this.currentAction = new Float32Array(12).fill(0.0);
 
+        // 历史观测缓冲区
+        this.historyLength = 1; // 默认为1 (无堆叠)
+        this.obsHistory = [];   // 存储最近 N 帧的 Float32Array
+
         // Inference State
         this.onnxReady = false;
         this.loadingModel = false;
+        this.obsSlices = [
+            [0, 3],   // AngVel
+            [3, 6],   // Gravity
+            [6, 9],   // Commands
+            [9, 21],  // Dof Pos
+            [21, 33], // Dof Vel
+            [33, 45]  // Previous Action
+        ];
     }
 
     setPhysics(model, data) {
@@ -33,11 +45,28 @@ export class RobotController {
         this.data = data;
     }
 
-    async loadModel(url) {
-        if (this.onnxReady || this.loadingModel) return true;
+    async loadModel(config) {
+        const { url, history, stacking } = config;
+
+        // 如果完全一样，直接返回
+        if (this.onnxReady && this.currentModelUrl === url &&
+            this.historyLength === history && this.stackingMode === stacking) {
+            return true;
+        }
+
         try {
             this.loadingModel = true;
+            this.onnxReady = false;
+
+            console.log(`Loading: ${url} | History: ${history} | Stacking: ${stacking}`);
+
             await initOnnxModel(url);
+
+            this.currentModelUrl = url;
+            this.historyLength = history;
+            this.stackingMode = stacking; // 更新堆叠模式
+            this.obsHistory = [];
+
             this.onnxReady = true;
             this.loadingModel = false;
             return true;
@@ -67,6 +96,7 @@ export class RobotController {
         this.data.qacc.fill(0);
         this.currentAction.fill(0);
 
+        this.obsHistory = [];
         this.mujoco.mj_forward(this.model, this.data);
     }
 
@@ -105,12 +135,64 @@ export class RobotController {
         return obs;
     }
 
+    flattenHistoryByTerm() {
+        const totalSize = this.num_obs * this.historyLength;
+        const flatObs = new Float32Array(totalSize);
+        let offset = 0;
+
+        // 遍历每个特征项 (AngVel, Gravity, ...)
+        for (const [start, end] of this.obsSlices) {
+            const sliceSize = end - start;
+
+            // 遍历历史帧 (从旧到新)
+            for (let t = 0; t < this.historyLength; t++) {
+                const frameData = this.obsHistory[t];
+                // 提取该帧的对应切片
+                const termData = frameData.subarray(start, end);
+
+                // 写入 flatObs
+                flatObs.set(termData, offset);
+                offset += sliceSize;
+            }
+        }
+        return flatObs;
+    }
+
+    flattenHistoryByFrame() {
+        const totalSize = this.num_obs * this.historyLength;
+        const flatObs = new Float32Array(totalSize);
+        for (let i = 0; i < this.historyLength; i++) {
+            flatObs.set(this.obsHistory[i], i * this.num_obs);
+        }
+        return flatObs;
+    }
+
     async infer(cmd_vel) {
         if (!this.onnxReady) return;
 
-        const obs = this.buildObservation(cmd_vel);
+        const currentObs = this.buildObservation(cmd_vel);
+
+        // 维护历史队列 (Cold Start 填充逻辑)
+        if (this.obsHistory.length === 0) {
+            for (let i = 0; i < this.historyLength - 1; i++) {
+                this.obsHistory.push(new Float32Array(this.num_obs).fill(0));
+            }
+        }
+        if (this.obsHistory.length >= this.historyLength) {
+            this.obsHistory.shift();
+        }
+        this.obsHistory.push(new Float32Array(currentObs));
+
+        // 👇 根据配置选择堆叠方式 👇
+        let flatObs;
+        if (this.stackingMode === 'term') {
+            flatObs = this.flattenHistoryByTerm();
+        } else {
+            flatObs = this.flattenHistoryByFrame();
+        }
+
         try {
-            const action = await runOnnx(obs);
+            const action = await runOnnx(flatObs);
             this.currentAction = action;
             for (let i = 0; i < 12; i++) {
                 this.currentTarget[i] = action[i] * this.action_scale + this.default_angles[i];
