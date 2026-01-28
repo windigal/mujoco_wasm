@@ -6,7 +6,7 @@ export class InputHandler {
         this.current_input = new Float32Array([0.0, 0.0, 0.0]);
 
         // 最大速度配置
-        this.max_cmd = [2.0, 1.0, 2.0];
+        this.max_cmd = [1.5, 1.0, 2.0];
 
         // 平滑系数 (加速度)
         // 值越小越平滑，起步和刹车越慢。

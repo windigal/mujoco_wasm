@@ -94,9 +94,11 @@ export function setupGUI(parentContext) {
     let reload = reloadFunc.bind(parentContext);
     // 使用下拉菜单（Select），lil-gui 标准方式
     sceneFolder.add(parentContext.params, 'scene', {
+        "Flat": "go2/flat.xml",
+        "Cross Stairs": "go2/cross_stairs.xml",
+        "Cross Slope": "go2/cross_slope.xml",
+        "Stair Series": "go2/stairs.xml",
         "Race Track": "go2/race_track.xml",
-        "Stairs": "go2/stairs.xml",
-        "Flat": "go2/flat.xml"
     }).name('Select Scene').onChange(reload);
     sceneFolder.open(); // 默认展开
 
@@ -503,16 +505,20 @@ export async function loadSceneFromURL(mujoco, filename, parent) {
                     rgbaArray[(p * 4) + 3] = channels > 3 ? texData[offset + ((p * channels) + 3)] : 255;
                 }
                 texture = new THREE.DataTexture(rgbaArray, width, height, THREE.RGBAFormat, THREE.UnsignedByteType);
-                if (texId == 2) {
-                    texture.repeat = new THREE.Vector2(50, 50);
-                    texture.wrapS = THREE.RepeatWrapping;
-                    texture.wrapT = THREE.RepeatWrapping;
-                } else {
-                    texture.repeat = new THREE.Vector2(model.mat_texrepeat[(model.geom_matid[g] * 2) + 0],
-                        model.mat_texrepeat[(model.geom_matid[g] * 2) + 1]);
-                    texture.wrapS = THREE.RepeatWrapping;
-                    texture.wrapT = THREE.RepeatWrapping;
-                }
+                // if (texId == 2) {
+                //     texture.repeat = new THREE.Vector2(50, 50);
+                //     texture.wrapS = THREE.RepeatWrapping;
+                //     texture.wrapT = THREE.RepeatWrapping;
+                // } else {
+                //     texture.repeat = new THREE.Vector2(model.mat_texrepeat[(model.geom_matid[g] * 2) + 0],
+                //         model.mat_texrepeat[(model.geom_matid[g] * 2) + 1]);
+                //     texture.wrapS = THREE.RepeatWrapping;
+                //     texture.wrapT = THREE.RepeatWrapping;
+                // }
+                texture.repeat = new THREE.Vector2(model.mat_texrepeat[(model.geom_matid[g] * 2) + 0],
+                    model.mat_texrepeat[(model.geom_matid[g] * 2) + 1]);
+                texture.wrapS = THREE.RepeatWrapping;
+                texture.wrapT = THREE.RepeatWrapping;
 
                 texture.needsUpdate = true;
             }
@@ -693,6 +699,8 @@ export async function downloadExampleScenesFolder(mujoco) {
         "go2/flat.xml",
         "go2/go2.xml",
         "go2/race_track.xml",
+        "go2/cross_stairs.xml",
+        "go2/cross_slope.xml",
         "go2/stairs.xml",
         "go2/assets/base_0.obj",
         "go2/assets/base_1.obj",
@@ -720,6 +728,10 @@ export async function downloadExampleScenesFolder(mujoco) {
         "go2/dae/thigh.dae",
         "go2/dae/thigh_mirror.dae",
         "go2/urdf/go2.urdf",
+        "go2/imgs/label_1.png",
+        "go2/imgs/label_4.png",
+        "go2/imgs/label_7.png",
+        "go2/imgs/label_10.png"
     ];
 
     let requests = allFiles.map((url) => fetch("./assets/scenes/" + url));

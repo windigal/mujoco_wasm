@@ -2,6 +2,8 @@
   "go2\\flat.xml",
   "go2\\go2.xml",
   "go2\\race_track.xml",
+  "go2\\cross_stairs.xml",
+  "go2\\cross_slope.xml",
   "go2\\stairs.xml",
   "go2\\assets\\base_0.obj",
   "go2\\assets\\base_1.obj",
@@ -28,5 +30,9 @@
   "go2\\dae\\hip.dae",
   "go2\\dae\\thigh.dae",
   "go2\\dae\\thigh_mirror.dae",
-  "go2\\urdf\\go2.urdf"
+  "go2\\urdf\\go2.urdf",
+  "go2\\imgs\\label_1.png",
+  "go2\\imgs\\label_4.png",
+  "go2\\imgs\\label_7.png",
+  "go2\\imgs\\label_10.png"
 ]

@@ -54,10 +54,10 @@ export class MuJoCoDemo {
             help: false,
             ctrlnoiserate: 0.0,
             ctrlnoisestd: 0.0,
-            follow: false,
+            follow: true,
             enableRL: false,
-            showArrows: false,
-            model: 'ppo'
+            showArrows: true,
+            model: 'moects'
         };
 
         this.mujoco_time = 0.0;
@@ -276,6 +276,5 @@ export class MuJoCoDemo {
     }
 }
 
-// Helper function moved from bottom
 let demo = new MuJoCoDemo();
 await demo.init();
