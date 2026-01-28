@@ -12,7 +12,7 @@ import { RobotController } from './utils/RobotController.js';
 const mujoco = await load_mujoco();
 
 // Virtual FS Setup
-var initialScene = "go2/stairs.xml";
+var initialScene = "go2/cross_stairs.xml";
 mujoco.FS.mkdir('/working');
 mujoco.FS.mount(mujoco.MEMFS, { root: '.' }, '/working');
 

@@ -140,6 +140,14 @@ export function setupGUI(parentContext) {
     aiFolder.add(refreshObj, 'refresh').name('Refresh AI Control');
     aiFolder.open(); // 默认展开
 
+    // Command Folder
+    const cmdFolder = parentContext.gui.addFolder('Commands');
+    // 直接绑定到 inputHandler 内部的数组索引
+    // 参数: (对象, 属性名/索引, 最小值, 最大值)
+    cmdFolder.add(parentContext.inputHandler.max_cmd, '0', 0.0, 1.5).name('Max Vx (Front)');
+    cmdFolder.add(parentContext.inputHandler.max_cmd, '1', 0.0, 1.0).name('Max Vy (Side)');
+    cmdFolder.add(parentContext.inputHandler.max_cmd, '2', 0.0, 2.0).name('Max Yaw (Turn)');
+    cmdFolder.open(); 
     // Simulation Folder
     const simFolder = parentContext.gui.addFolder("Simulation");
 
@@ -175,8 +183,8 @@ export function setupGUI(parentContext) {
     simFolder.add({ reset: () => { resetSimulation(); } }, 'reset').name('Reset');
 
     // Noise Params
-    simFolder.add(parentContext.params, 'ctrlnoiserate', 0.0, 2.0, 0.01).name('Noise rate');
-    simFolder.add(parentContext.params, 'ctrlnoisestd', 0.0, 2.0, 0.01).name('Noise scale');
+    // simFolder.add(parentContext.params, 'ctrlnoiserate', 0.0, 2.0, 0.01).name('Noise rate');
+    // simFolder.add(parentContext.params, 'ctrlnoisestd', 0.0, 2.0, 0.01).name('Noise scale');
 
     simFolder.open(); // 默认展开
 
@@ -185,39 +193,6 @@ export function setupGUI(parentContext) {
     setupToggleButton(camFolder, parentContext.params, 'follow', 'Follow Robot');
     setupToggleButton(camFolder, parentContext.params, 'showArrows', 'Show Velocity Arrows');
     camFolder.open(); // 默认展开
-
-    // Actuators
-    let textDecoder = new TextDecoder("utf-8");
-    let nullChar = textDecoder.decode(new ArrayBuffer(1));
-    let actuatorFolder = parentContext.gui.addFolder("Actuators");
-
-    const addActuators = (model, data, params) => {
-        let act_range = model.actuator_ctrlrange;
-        let actuatorGUIs = [];
-        for (let i = 0; i < model.nu; i++) {
-            if (!model.actuator_ctrllimited[i]) { continue; }
-            let name = textDecoder.decode(
-                parentContext.model.names.subarray(
-                    parentContext.model.name_actuatoradr[i])).split(nullChar)[0];
-
-            parentContext.params[name] = 0.0;
-            let actuatorGUI = actuatorFolder.add(parentContext.params, name, act_range[2 * i], act_range[2 * i + 1], 0.01).name(name).listen();
-            actuatorGUIs.push(actuatorGUI);
-            actuatorGUI.onChange((value) => {
-                data.ctrl[i] = value;
-            });
-        }
-        return actuatorGUIs;
-    };
-
-    let actuatorGUIs = addActuators(parentContext.model, parentContext.data, parentContext.params);
-    parentContext.updateGUICallbacks.push((model, data, params) => {
-        for (let i = 0; i < actuatorGUIs.length; i++) {
-            actuatorGUIs[i].destroy();
-        }
-        actuatorGUIs = addActuators(model, data, parentContext.params);
-    });
-    actuatorFolder.close(); // 默认折叠
 
     // Shortcuts
     // Help Menu (F1)
