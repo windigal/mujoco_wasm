@@ -55,7 +55,7 @@ export class MuJoCoDemo {
             ctrlnoiserate: 0.0,
             ctrlnoisestd: 0.0,
             follow: true,
-            enableRL: false,
+            enableRL: true,
             showArrows: true,
             model: 'moects'
         };
@@ -84,7 +84,9 @@ export class MuJoCoDemo {
         // Notify RobotController about new model
         this.robotController.setPhysics(this.model, this.data);
         this.robotController.resetPose(); // Initial stand
-
+        if (this.params.enableRL) {
+            await this.toggleRL(true);  
+        }
         this.gui = new GUI();
         setupGUI(this);
     }
