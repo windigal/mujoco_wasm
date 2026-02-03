@@ -896,6 +896,41 @@ function setupGUI(parentContext) {
     }
   });
 }
+function addRepoButton(url) {
+  const link = document.createElement("a");
+  link.href = url;
+  link.target = "_blank";
+  link.rel = "noopener noreferrer";
+  Object.assign(link.style, {
+    position: "absolute",
+    bottom: "20px",
+    right: "20px",
+    width: "40px",
+    height: "40px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "white",
+    // 背景圆圈颜色
+    borderRadius: "50%",
+    boxShadow: "0 4px 6px rgba(0,0,0,0.3)",
+    zIndex: "9999",
+    transition: "transform 0.2s ease",
+    cursor: "pointer"
+  });
+  link.onmouseenter = () => {
+    link.style.transform = "scale(1.1)";
+  };
+  link.onmouseleave = () => {
+    link.style.transform = "scale(1.0)";
+  };
+  link.innerHTML = `
+        <svg height="24" width="24" viewBox="0 0 16 16" version="1.1" style="fill: #333;">
+            <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"></path>
+        </svg>
+    `;
+  document.body.appendChild(link);
+}
 function setupHelpMenu(parentContext) {
   let keyInnerHTML = "F1<br>Space<br>Ctrl L<br>Backspace<br>Ctrl A<br>";
   let actionInnerHTML = "Help<br>Play / Pause<br>Reload XML<br>Reset simulation<br>Reset free camera<br>";
@@ -13042,6 +13077,7 @@ var MuJoCoDemo = class {
     }
     this.gui = new g();
     setupGUI(this);
+    addRepoButton("https://github.com/YourUsername/YourRepoName");
   }
   async toggleRL(enabled) {
     if (enabled) {

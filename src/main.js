@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { GUI } from '../node_modules/three/examples/jsm/libs/lil-gui.module.min.js';
 import { DragStateManager } from './utils/DragStateManager.js';
-import { setupGUI, downloadExampleScenesFolder, loadSceneFromURL, drawTendonsAndFlex, getPosition, getQuaternion, toMujocoPos, standardNormal } from './mujocoUtils.js';
+import { setupGUI, downloadExampleScenesFolder, loadSceneFromURL, drawTendonsAndFlex, getPosition, getQuaternion, toMujocoPos, standardNormal, addRepoButton} from './mujocoUtils.js';
 import load_mujoco from 'mujoco_wasm';
 import { SceneSetup } from './utils/SceneSetup.js';
 import { InputHandler } from './utils/InputHandler.js';
@@ -89,6 +89,7 @@ export class MuJoCoDemo {
         }
         this.gui = new GUI();
         setupGUI(this);
+        addRepoButton('https://github.com/windigal/mujoco_wasm');
     }
 
     async toggleRL(enabled) {
