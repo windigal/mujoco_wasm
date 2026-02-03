@@ -1,31 +1,59 @@
-<p align="center">
-  <a href="https://zalo.github.io/mujoco_wasm/"><img src="./assets/MuJoCoWasmLogo.png" href></a>
-</p>
-<p align="left">
-  <a href="https://github.com/zalo/mujoco_wasm/deployments/activity_log?environment=github-pages">
-      <img src="https://img.shields.io/github/deployments/zalo/mujoco_wasm/github-pages?label=Github%20Pages%20Deployment" title="Github Pages Deployment"></a>
-  <!--<a href="https://github.com/zalo/mujoco_wasm/deployments/activity_log?environment=Production">
-      <img src="https://img.shields.io/github/deployments/zalo/mujoco_wasm/Production?label=Vercel%20Deployment" title="Vercel Deployment"></a> -->
-  <!--<a href="https://lgtm.com/projects/g/zalo/mujoco_wasm/context:javascript">
-      <img alt="Language grade: JavaScript" src="https://img.shields.io/lgtm/grade/javascript/g/zalo/mujoco_wasm.svg?logo=lgtm&logoWidth=18"/></a> -->
-  <a href="https://github.com/zalo/mujoco_wasm/commits/main">
-      <img src="https://img.shields.io/github/last-commit/zalo/mujoco_wasm" title="Last Commit Date"></a>
-  <a href="https://github.com/zalo/mujoco_wasm/blob/main/LICENSE">
-      <img src="https://img.shields.io/badge/license-MIT-brightgreen" title="License: MIT"></a>
-</p>
+<div align="center">
+	<h1 align="center">MuJoCo WASM + Go2 ONNX Web</h1>
+	<p align="center">
+		<a href="README_zh.md">中文</a> | <span>English </span>
+	</p>
+</div>
 
-## The Power of MuJoCo in your Browser.
+**Overview**
 
-Load and Run MuJoCo 3.3.8 Models using JavaScript and the official MuJoCo WebAssembly Bindings.
+This project runs MuJoCo (WASM) simulations in the browser and performs online inference of a Go2 (quadruped) policy using ONNX Runtime Web. The repository also includes several test terrains (steps, slopes, tracks, etc.) to validate control and policy performance. [See the live demo here](https://robogauge.github.io/mujoco_wasm/index.html)
 
-This project used to be a WASM compilation and set of javascript bindings for MuJoCo, but since Deepmind completed the official MuJoCo bindings, this project is now just a small demo suite in the `examples` folder.
 
-### [See the Live Demo Here](https://zalo.github.io/mujoco_wasm/)
+## Quick Start (Local) 
 
-### [See a more Advanced Example Here](https://kzakka.com/robopianist/)
+1. Install dependencies:
 
-## Build
+```bash
+npm install
+```
 
-Simply ensure `npm` is installed and run `npm install` to pull three.js and MuJoCo's Official WASM bindings.
+2. Build the frontend bundle:
 
-Then run `npm run build` and `python server.py` to start the program.
+```bash
+npm run build
+```
+
+3. Start the local static server:
+
+```bash
+python server.py
+# Visit http://localhost:8090
+```
+
+> Note: To use ONNX Runtime Web multithreading / SharedArrayBuffer, the page must be served with COOP/COEP headers (already handled by `server.py`). Use a modern browser (latest Chrome/Edge/Firefox recommended).
+
+## How to Use
+
+- After the page loads you will see the simulation area and the GUI (lil-gui).
+- Choose different terrains from the Scene dropdown; the page will reload the selected scene.
+- In AI Controls select a model (PPO / MOECTS) and click "Enable AI Control" to activate policy inference.
+- Use keyboard WASD/QE or joystick to control the 
+
+## Adding / Replacing ONNX Models or Scenes
+
+- Add an ONNX model: put the model file in `models/` (e.g. `my_model.onnx`), then add or replace an entry in `src/main.js`'s `modelConfigs`:
+
+```js
+modelConfigs: {
+  "my_model": { url: './models/my_model.onnx', history: 3, stacking: 'frame' }
+}
+```
+
+- Add a scene: place the scene and its assets in `assets/scenes/go2/` and add the scene path to the `Scene` options in `src/mujocoUtils.js`.
+
+## Acknowledgment & Contributing
+
+This repository references from [zalo/mujoco_wasm](https://github.com/zalo/mujoco_wasm)
+
+Contributions are welcome (issues/PRs) to add scenes, models, or improve examples.
